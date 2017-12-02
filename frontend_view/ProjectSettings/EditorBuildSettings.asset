@@ -4,4 +4,7 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/IntegrationTests/EchoSendTest.unity
+    guid: 0eb77cf53725d4041ab9931148ddf665
