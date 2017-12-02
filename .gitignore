@@ -35,3 +35,6 @@ sysinfo.txt
 
 # Rider
 frontend_view/.idea
+
+# Build folder
+output/
