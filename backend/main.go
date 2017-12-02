@@ -1,13 +1,22 @@
 package main
 
 import (
+	"container/list"
+	"fmt"
 	"log"
-	"net/http"
+	"net"
 
-	"github.com/surma/httptools"
 	"github.com/voxelbrain/goptions"
-	"golang.org/x/net/websocket"
 )
+
+var (
+	clients = list.New()
+)
+
+type Client struct {
+	ListElement *list.Element
+	net.Conn
+}
 
 func main() {
 	options := struct {
@@ -18,38 +27,44 @@ func main() {
 	}
 
 	goptions.ParseAndFail(&options)
-	app := httptools.List{
-		httptools.SilentHandlerFunc(AllowCors),
-		httptools.NewRegexpSwitch(map[string]http.Handler{
-			"/": http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("<h1>OHAI</h1>"))
-			}),
-			"/echo": WebsocketEchoServer(),
-		}),
+	log.Printf("Starting server on %s...", options.Listen)
+	ln, err := net.Listen("tcp", options.Listen)
+	if err != nil {
+		log.Fatalf("Could not start server: %s", err)
 	}
-	log.Printf("Starting webserver on %s...", options.Listen)
-	http.ListenAndServe(options.Listen, app)
-}
-
-func AllowCors(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-}
-
-func WebsocketEchoServer() websocket.Handler {
-	return websocket.Handler(func(c *websocket.Conn) {
-		buffer := make([]byte, 1024)
-		for {
-			n, err := c.Read(buffer)
-			if err != nil {
-				log.Printf("Error reading from client: %s", err)
-				return
-			}
-			log.Printf("Received message from %s: %s", c.RemoteAddr(), string(buffer[0:n]))
-			_, err = c.Write(buffer[0:n])
-			if err != nil {
-				log.Printf("Error reading from client: %s", err)
-				return
-			}
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			continue
 		}
-	})
+
+		client := Client{
+			Conn: conn,
+		}
+
+		client.ListElement = clients.PushBack(client)
+		go handleConnection(client)
+	}
+}
+
+func handleConnection(c Client) {
+	defer c.Conn.Close()
+	defer func() {
+		clients.Remove(c.ListElement)
+	}()
+	fmt.Fprintf(c, "Number of clients connected: %d\n", clients.Len())
+	buffer := make([]byte, 1024)
+	for {
+		n, err := c.Read(buffer)
+		if err != nil {
+			log.Printf("Error reading from client: %s", err)
+			return
+		}
+		log.Printf("Received message from %s: %s", c.RemoteAddr(), string(buffer[0:n]))
+		_, err = c.Write(buffer[0:n])
+		if err != nil {
+			log.Printf("Error writing to client: %s", err)
+			return
+		}
+	}
 }
