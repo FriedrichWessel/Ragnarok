@@ -14,26 +14,30 @@
 //
 //    Example:
 //      {
-//        "players": [
-//      		{
-//      			"UUID": "00000000-0000-0000-0000-000000000000",
-//      			"model_id": 0,
-//      			"position": [0.0, 4.0, 0.0],
-//      			"velocity": [1.0, 0.0, 0.0]
-//      		},
-//      		{ /* ... */ }
-//      	],
-//      	"map": {
-//      		"height": 4.0,
-//      		"objects": [
-//      			{
-//      				"uuid": "00000000-0000-0000-0000-000000000000",
-//      				"model_id": 1,
-//      				"position": [10.0, 4.0, 0.0]
-//      			},
-//      			{ /* ... */ }
-//      		]
-//      	}
+//        "timestamp": 1234657880234,
+//        "map": {
+//          "height": 4.0,
+//        },
+//        "objects": [
+//          {
+//            "UUID": "00000000-0000-0000-0000-000000000000",
+//            "model_id": <id>, // = Pux
+//            "position": [0.0, 4.0, 0.0],
+//            "components": [
+//              {
+//                "type": <id> // = Movable
+//                "velocity": [1.0, 0.0, 0.0]
+//              },
+//            ]
+//          },
+//          {
+//            "uuid": "00000000-0000-0000-0000-000000000000",
+//            "model_id": <id>, // = Hurdle
+//            "position": [10.0, 4.0, 0.0]
+//            "components": []
+//          },
+//          { /* ... */ }
+//        ]
 //      }
 package protocol
 
@@ -53,10 +57,24 @@ type Vector3 struct {
 	Z float32 `json:"z"`
 }
 
+type ComponentType uint8
+
+const (
+	MovableComponent ComponentType = iota
+)
+
+/*
+type MovableComponent struct {
+  Typ ComponentType `json:"type"`
+  Velocity Vecto3 `json:"velocity"`
+}
+*/
+
 type Object struct {
-	UUID     string  `json:"uuid"`
-	ModelId  uint64  `json:"model_id"`
-	Position Vector3 `json:"position"`
+	UUID       string      `json:"uuid"`
+	ModelId    uint64      `json:"model_id"`
+	Position   Vector3     `json:"position"`
+	Components interface{} `json:"components"`
 }
 
 type Map struct {
@@ -72,6 +90,7 @@ type Player struct {
 }
 
 type GameStateUpdateMessage struct {
-	players []Player `json:"players"`
-	Map     Map      `json:"map"`
+	Timestamp uint64   `json:"timestamp"`
+	players   []Player `json:"players"`
+	Map       Map      `json:"map"`
 }
