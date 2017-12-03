@@ -14,33 +14,40 @@ public enum UserInputType
 
 public class GameStateModel
 {
-	public List<Player> players;
+	// microseconds UTC
+	public long timestamp; 
 	// 0 = bottom of screen
 	public float groundHeight;
 	public WorldObject[] worldObjects; 
 }
-/*
-public class UpdateGameStateModel
-{
-	public List<Player> addPlayers; 
-	// list of uuid
-	public List<string> removePlayer;
-	public List<Player> updatePlayer;
-}*/
 
 public class WorldObject
 {
 	public string uuid;
 	public string modelId;
 	public float[] position;
+	public List<ComponentData> components;
 }
 
-public class Player
+public enum ComponentType
 {
-	public string uuid;
-	public float[] position;
-	public string modelId;
-	public float[] velocity;
+	Movement = 0, 
+	Exhaust = 1
+}
+
+public class ComponentData
+{
+	public ComponentType Type; 
+}
+
+public class MovementComponentData : ComponentData()
+{
+	public MovementComponentData()
+	{
+		Type = ComponentType.Movement;
+	}
+
+	public float[] Velocity;
 }
 
 
