@@ -40,7 +40,7 @@ public class ComponentData
 	public ComponentType Type; 
 }
 
-public class MovementComponentData : ComponentData()
+public class MovementComponentData : ComponentData
 {
 	public MovementComponentData()
 	{
